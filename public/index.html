@@ -55,6 +55,9 @@
             // ignore if already pasting in an input/textarea
             if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
 
+            // prevent default paste behavior to avoid double pasting
+            e.preventDefault();
+
             // get the pasted content
             const pastedText = e.clipboardData.getData("text");
 
