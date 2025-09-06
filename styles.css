@@ -12,6 +12,12 @@ body {
     padding: 1rem;
 }
 
+.bookmark-header {
+    display: flex;
+    align-items: center;
+    gap: 2em;
+}
+
 h1 {
     font-size: 14pt;
     font-weight: normal;
