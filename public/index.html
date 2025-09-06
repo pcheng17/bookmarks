@@ -8,8 +8,8 @@
 </head>
 <body>
     <div class="container">
-        <div style="display: flex; align-items: center; gap: 24px;">
-            <h1>bookmarks <span style="font-size: 8pt; color: #666;">(local development)</span></h1>
+        <div class="bookmark-header" style="display: flex; align-items: center; gap: 24px; ">
+            <h1>bookmarks</h1>
             <form id="bookmark-form">
                 <input type="url" id="url-input" placeholder="paste link here" required>
                 <button type="submit" style="display: none;"></button>
@@ -18,7 +18,6 @@
               logout
             </a>
         </div>
-
 
         <div id="search-container">
             <input type="text" id="search-input" placeholder="search bookmarks...">
@@ -44,5 +43,16 @@
     </div>
 
     <script src="app.js"></script>
+    <script>
+        document.addEventListener("keydown", (e) => {
+            // ignore if typing in an input/textarea already
+            if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+
+            if (e.key === "/") {
+                e.preventDefault(); // stop browser quick find
+                document.getElementById("search-input").focus();
+            }
+        });
+    </script>
 </body>
 </html>
