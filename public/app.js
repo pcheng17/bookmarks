@@ -115,9 +115,9 @@ class BookmarkApp {
                         <a href="${bookmark.url}" target="_blank">${bookmark.title || this.getDomainFromUrl(bookmark.url)}</a>
                         <span class="bookmark-date">${date}</span>
                     </div>
+                    ${bookmark.description ? `<div class="bookmark-description">${bookmark.description}</div>` : ''}
+                    ${bookmark.tags ? `<div class="bookmark-tags">${bookmark.tags}</div>` : ''}
                 </div>
-                ${bookmark.description ? `<div class="bookmark-description">${bookmark.description}</div>` : ''}
-                ${bookmark.tags ? `<div class="bookmark-tags">${bookmark.tags}</div>` : ''}
                 <div class="bookmark-actions" data-id="${bookmark.id}">⋯</div>
                 <div class="actions-menu" id="menu-${bookmark.id}">
                     <a onclick="app.editBookmark(${bookmark.id})">edit</a>
