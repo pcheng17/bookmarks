@@ -12,12 +12,12 @@ const mimeTypes = {
 };
 
 const server = http.createServer((req, res) => {
-    let filePath = req.url === '/' ? '/index-local.html' : req.url;
+    let filePath = req.url === '/' ? '/public/index.html' : req.url;
     filePath = path.join(__dirname, filePath);
-    
+
     const extname = path.extname(filePath);
     const contentType = mimeTypes[extname] || 'text/plain';
-    
+
     fs.readFile(filePath, (err, content) => {
         if (err) {
             if (err.code === 'ENOENT') {
