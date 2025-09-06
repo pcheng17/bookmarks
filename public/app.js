@@ -110,9 +110,11 @@ class BookmarkApp {
             const item = document.createElement('div');
             item.className = 'bookmark-item';
             item.innerHTML = `
-                <div class="bookmark-url">
-                    <a href="${bookmark.url}" target="_blank">${bookmark.title || this.getDomainFromUrl(bookmark.url)}</a>
-                    <span class="bookmark-date">${date}</span>
+                <div class="bookmark-info">
+                    <div class="bookmark-url">
+                        <a href="${bookmark.url}" target="_blank">${bookmark.title || this.getDomainFromUrl(bookmark.url)}</a>
+                        <span class="bookmark-date">${date}</span>
+                    </div>
                 </div>
                 ${bookmark.description ? `<div class="bookmark-description">${bookmark.description}</div>` : ''}
                 ${bookmark.tags ? `<div class="bookmark-tags">${bookmark.tags}</div>` : ''}
