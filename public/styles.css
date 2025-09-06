@@ -41,7 +41,7 @@ h1 {
 }
 
 #search-input {
-    width: 300px;
+    width: 400px;
     padding: 6px;
     font-family: verdana, arial, helvetica, sans-serif;
     font-size: 10pt;
@@ -55,9 +55,9 @@ h1 {
 }
 
 .bookmark-item {
-    /* border-bottom: 1px solid #cccccc; */
     padding: 8px;
     position: relative;
+    /* border-radius: 4px; */
 }
 
 .bookmark-item:nth-child(even) {

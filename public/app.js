@@ -212,7 +212,7 @@ class BookmarkApp {
 
         this.searchTimeout = setTimeout(() => {
             this.filterBookmarks(query);
-        }, 400);
+        }, 300);
     }
 
     filterBookmarks(query) {
