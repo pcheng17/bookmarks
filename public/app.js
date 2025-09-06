@@ -102,6 +102,11 @@ class BookmarkApp {
         const container = document.getElementById('bookmarks-list');
         container.innerHTML = '';
 
+        if (this.filteredBookmarks.length === 0) {
+            container.innerHTML = '<p>No bookmarks found.</p>';
+            return;
+        }
+
         this.filteredBookmarks.forEach(bookmark => {
             const date = new Date(bookmark.created_at).toLocaleDateString('en-CA', {
                 timeZone: 'America/Los_Angeles'
