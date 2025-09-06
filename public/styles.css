@@ -67,6 +67,12 @@ h1 {
     background-color: #ffffff; /* White for odd rows */
 }
 
+.bookmark-date {
+    color: #666666;
+    font-size: 9pt;
+    margin-left: 10px;
+}
+
 .bookmark-url {
     color: #0000ee;
     font-size: 10pt;

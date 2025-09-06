@@ -112,7 +112,7 @@ class BookmarkApp {
             item.innerHTML = `
                 <div class="bookmark-url">
                     <a href="${bookmark.url}" target="_blank">${bookmark.title || this.getDomainFromUrl(bookmark.url)}</a>
-                    <span style="color: #666666; font-size: 9pt; margin-left: 10px;">${date}</span>
+                    <span class="bookmark-date">${date}</span>
                 </div>
                 ${bookmark.description ? `<div class="bookmark-description">${bookmark.description}</div>` : ''}
                 ${bookmark.tags ? `<div class="bookmark-tags">${bookmark.tags}</div>` : ''}
