@@ -246,7 +246,7 @@ class BookmarkApp {
         // Set new timeout for 200ms debounce
         this.searchTimeout = setTimeout(() => {
             this.filterBookmarks(query);
-        }, 200);
+        }, 400);
     }
 
     filterBookmarks(query) {
