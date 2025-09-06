@@ -61,7 +61,7 @@ async function handleBookmarksAPI(request, env) {
             const snapshotKey = await savePageSnapshot(url, env);
 
             const result = await env.DB.prepare(
-                'INSERT INTO bookmarks (url, title, snapshot_key, favicon_key) VALUES (?, ?, ?, ?) RETURNING *'
+                'INSERT INTO bookmarks (url, title, snapshot_key) VALUES (?, ?, ?) RETURNING *'
             ).bind(url, title, snapshotKey).first();
 
             return new Response(JSON.stringify(result), {
@@ -106,16 +106,13 @@ async function handleBookmarkAPI(request, env, id) {
     if (request.method === 'DELETE') {
         try {
             const bookmark = await env.DB.prepare(
-                'SELECT snapshot_key, favicon_key FROM bookmarks WHERE id = ?'
+                'SELECT snapshot_key FROM bookmarks WHERE id = ?'
             ).bind(id).first();
 
             if (bookmark) {
                 // Clean up R2 objects
                 if (bookmark.snapshot_key) {
                     await env.R2.delete(bookmark.snapshot_key);
-                }
-                if (bookmark.favicon_key) {
-                    await env.R2.delete(bookmark.favicon_key);
                 }
             }
 
