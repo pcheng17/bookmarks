@@ -1,0 +1,26 @@
+name = "bookmarks"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# Production environment (default)
+[[d1_databases]]
+binding = "DB"
+database_name = "bookmarks-db"
+database_id = "06f6ad26-f2d8-4d19-86a6-2c0cf07bef17"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "bookmarks-snapshots"
+
+# Staging environment
+[env.staging]
+name = "bookmarks-staging"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "bookmarks-db-staging"
+database_id = "39094221-fa4d-41a5-95a9-22ae094e0f3d"
+
+[[env.staging.r2_buckets]]
+binding = "R2"
+bucket_name = "bookmarks-snapshots-staging"

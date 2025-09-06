@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Local App</title>
+</head>
+<body>
+    <h1>Debug Test</h1>
+    <button onclick="testSave()">Test Save Bookmark</button>
+    <div id="result"></div>
+    
+    <script src="app-local.js"></script>
+    <script>
+        function testSave() {
+            console.log('Testing bookmark save...');
+            const app = new BookmarkApp();
+            app.saveBookmark('https://example.com');
+            
+            setTimeout(() => {
+                console.log('Bookmarks:', app.bookmarks);
+                document.getElementById('result').innerHTML = 
+                    '<pre>' + JSON.stringify(app.bookmarks, null, 2) + '</pre>';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

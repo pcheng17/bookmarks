@@ -1,0 +1,214 @@
+class BookmarkApp {
+    constructor() {
+        this.bookmarks = this.loadFromLocalStorage();
+        this.init();
+    }
+
+    init() {
+        this.bindEvents();
+        this.renderBookmarks();
+    }
+
+    bindEvents() {
+        const form = document.getElementById('bookmark-form');
+        const urlInput = document.getElementById('url-input');
+        const modal = document.getElementById('edit-modal');
+        const closeModal = document.querySelector('.close');
+        const editForm = document.getElementById('edit-form');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.saveBookmark(urlInput.value.trim());
+            urlInput.value = '';
+        });
+
+        urlInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                form.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        closeModal.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        editForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.updateBookmark();
+        });
+    }
+
+    async saveBookmark(url) {
+        if (!url) return;
+
+        // Check if URL already exists
+        const existingBookmark = this.bookmarks.find(b => b.url === url);
+        if (existingBookmark) {
+            console.log('URL already bookmarked:', url);
+            return;
+        }
+
+        const bookmark = {
+            id: Date.now(),
+            url: url,
+            title: 'Loading title...',
+            description: '',
+            tags: '',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            snapshot_available: true
+        };
+
+        this.bookmarks.unshift(bookmark);
+        this.saveToLocalStorage();
+        this.renderBookmarks();
+
+        try {
+            const title = await this.fetchPageTitle(url);
+            bookmark.title = title;
+            this.saveToLocalStorage();
+            this.renderBookmarks();
+        } catch (error) {
+            console.error('Failed to fetch title:', error);
+            bookmark.title = this.getDomainFromUrl(url);
+            this.saveToLocalStorage();
+            this.renderBookmarks();
+        }
+
+        console.log('Bookmark saved:', bookmark);
+    }
+
+    async fetchPageTitle(url) {
+        // For local development, just use domain name
+        // External API calls can be unreliable in local development
+        console.log('Local mode: Using domain name as title for', url);
+        return this.getDomainFromUrl(url);
+    }
+
+    loadFromLocalStorage() {
+        try {
+            const saved = localStorage.getItem('bookmarks');
+            return saved ? JSON.parse(saved) : [];
+        } catch {
+            return [];
+        }
+    }
+
+    saveToLocalStorage() {
+        try {
+            localStorage.setItem('bookmarks', JSON.stringify(this.bookmarks));
+        } catch (error) {
+            console.error('Failed to save to localStorage:', error);
+        }
+    }
+
+    renderBookmarks() {
+        const container = document.getElementById('bookmarks-list');
+        container.innerHTML = '';
+
+        if (this.bookmarks.length === 0) {
+            container.innerHTML = '<div style="color: #666; font-size: 9pt; padding: 20px 0;">no bookmarks yet. paste a link above to get started.</div>';
+            return;
+        }
+
+        this.bookmarks.forEach(bookmark => {
+            const item = document.createElement('div');
+            item.className = 'bookmark-item';
+            item.innerHTML = `
+                <div class="bookmark-url">
+                    <a href="${bookmark.url}" target="_blank">${bookmark.title || this.getDomainFromUrl(bookmark.url)}</a>
+                    <span style="color: #666666; font-size: 9pt; margin-left: 10px;">${new Date(bookmark.created_at).toLocaleDateString()}</span>
+                </div>
+                ${bookmark.description ? `<div class="bookmark-description">${bookmark.description}</div>` : ''}
+                ${bookmark.tags ? `<div class="bookmark-tags">${bookmark.tags}</div>` : ''}
+                <div class="bookmark-actions" data-id="${bookmark.id}">⋯</div>
+                <div class="actions-menu" id="menu-${bookmark.id}">
+                    <a onclick="app.editBookmark(${bookmark.id})">edit</a>
+                    <a onclick="app.viewSnapshot(${bookmark.id})">view snapshot</a>
+                    <a onclick="app.deleteBookmark(${bookmark.id})">delete</a>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+
+        document.querySelectorAll('.bookmark-actions').forEach(action => {
+            action.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = e.target.dataset.id;
+                const menu = document.getElementById(`menu-${id}`);
+
+                document.querySelectorAll('.actions-menu').forEach(m => {
+                    if (m !== menu) m.style.display = 'none';
+                });
+
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.actions-menu').forEach(menu => {
+                menu.style.display = 'none';
+            });
+        });
+    }
+
+    getDomainFromUrl(url) {
+        try {
+            const urlObj = new URL(url);
+            return urlObj.hostname;
+        } catch {
+            return url;
+        }
+    }
+
+    editBookmark(id) {
+        const bookmark = this.bookmarks.find(b => b.id === id);
+        if (!bookmark) return;
+
+        document.getElementById('edit-id').value = id;
+        document.getElementById('edit-description').value = bookmark.description || '';
+        document.getElementById('edit-tags').value = bookmark.tags || '';
+        document.getElementById('edit-modal').style.display = 'block';
+    }
+
+    updateBookmark() {
+        const id = parseInt(document.getElementById('edit-id').value);
+        const description = document.getElementById('edit-description').value;
+        const tags = document.getElementById('edit-tags').value;
+
+        const bookmark = this.bookmarks.find(b => b.id === id);
+        if (bookmark) {
+            bookmark.description = description;
+            bookmark.tags = tags;
+            bookmark.updated_at = new Date().toISOString();
+
+            this.saveToLocalStorage();
+            document.getElementById('edit-modal').style.display = 'none';
+            this.renderBookmarks();
+        }
+    }
+
+    deleteBookmark(id) {
+        if (!confirm('Delete this bookmark?')) return;
+
+        this.bookmarks = this.bookmarks.filter(b => b.id !== id);
+        this.saveToLocalStorage();
+        this.renderBookmarks();
+    }
+
+    viewSnapshot(id) {
+        const bookmark = this.bookmarks.find(b => b.id === id);
+        if (bookmark) {
+            alert(`In production, this would show a snapshot of:\n${bookmark.url}\n\n(Snapshots are only available when deployed to Cloudflare)`);
+        }
+    }
+}
+
+const app = new BookmarkApp();
