@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bookmarks</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>bookmarks</h1>
+        
+        <form id="bookmark-form">
+            <input type="url" id="url-input" placeholder="paste link here" required>
+            <button type="submit" style="display: none;"></button>
+        </form>
+
+        <div id="bookmarks-list"></div>
+    </div>
+
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>edit bookmark</h3>
+            <form id="edit-form">
+                <input type="hidden" id="edit-id">
+                <label>description:</label>
+                <input type="text" id="edit-description" placeholder="add description">
+                <label>tags:</label>
+                <input type="text" id="edit-tags" placeholder="add tags (comma separated)">
+                <button type="submit">save</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

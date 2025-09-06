@@ -2,6 +2,9 @@ name = "bookmarks"
 main = "worker.js"
 compatibility_date = "2024-01-01"
 
+[assets]
+directory = "./public"
+
 # Production environment (default)
 [[d1_databases]]
 binding = "DB"

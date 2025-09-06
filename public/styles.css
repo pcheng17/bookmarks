@@ -1,0 +1,181 @@
+body {
+    font-family: verdana, arial, helvetica, sans-serif;
+    font-size: 10pt;
+    background-color: #ffffff;
+    margin: 0;
+    padding: 20px;
+    line-height: 1.3;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+h1 {
+    font-size: 14pt;
+    font-weight: normal;
+    margin: 0 0 20px 0;
+    color: #000000;
+}
+
+#bookmark-form {
+    margin-bottom: 30px;
+}
+
+#url-input {
+    width: 400px;
+    padding: 4px;
+    font-family: verdana, arial, helvetica, sans-serif;
+    font-size: 10pt;
+    border: 1px solid #cccccc;
+}
+
+.bookmark-item {
+    /* border-bottom: 1px solid #cccccc; */
+    padding: 8px;
+    position: relative;
+}
+
+.bookmark-item:nth-child(even) {
+    background-color: #f8f9fa; /* Light gray for even rows */
+}
+.bookmark-item:nth-child(odd) {
+    background-color: #ffffff; /* White for odd rows */
+}
+
+.bookmark-url {
+    color: #0000ee;
+    font-size: 10pt;
+}
+
+.bookmark-url a {
+    color: #0000ee;
+    text-decoration: underline;
+}
+
+.bookmark-url a:hover {
+    color: #551a8b;
+}
+
+.bookmark-description {
+    color: #666666;
+    font-size: 9pt;
+    margin: 3px 0;
+}
+
+.bookmark-tags {
+    color: #008000;
+    font-size: 9pt;
+    margin: 3px 0;
+}
+
+.bookmark-meta {
+    color: #666666;
+    font-size: 9pt;
+    margin: 3px 0;
+}
+
+.bookmark-actions {
+    position: absolute;
+    right: 8px;
+    top: 10px;
+    cursor: pointer;
+    font-size: 12pt;
+    user-select: none;
+}
+
+.bookmark-actions:hover {
+    color: #333333;
+}
+
+.actions-menu {
+    position: absolute;
+    right: 0;
+    top: 20px;
+    background: white;
+    border: 1px solid #cccccc;
+    padding: 5px;
+    display: none;
+    z-index: 100;
+}
+
+.actions-menu a {
+    display: block;
+    color: #0000ee;
+    text-decoration: underline;
+    font-size: 9pt;
+    padding: 2px 0;
+    cursor: pointer;
+}
+
+.actions-menu a:hover {
+    color: #551a8b;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 400px;
+    font-family: verdana, arial, helvetica, sans-serif;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: black;
+}
+
+.modal-content h3 {
+    font-size: 11pt;
+    font-weight: normal;
+    margin: 0 0 15px 0;
+}
+
+.modal-content label {
+    display: block;
+    font-size: 9pt;
+    margin: 10px 0 3px 0;
+    color: #666666;
+}
+
+.modal-content input[type="text"] {
+    width: 380px;
+    padding: 4px;
+    font-family: verdana, arial, helvetica, sans-serif;
+    font-size: 10pt;
+    border: 1px solid #cccccc;
+    margin-bottom: 10px;
+}
+
+.modal-content button {
+    padding: 4px 8px;
+    font-family: verdana, arial, helvetica, sans-serif;
+    font-size: 10pt;
+    border: 1px solid #cccccc;
+    background: #f0f0f0;
+    cursor: pointer;
+}
+
+.modal-content button:hover {
+    background: #e0e0e0;
+}
