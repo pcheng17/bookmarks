@@ -31,6 +31,26 @@ h1 {
     border: 1px solid #cccccc;
 }
 
+#search-container {
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#search-input {
+    width: 300px;
+    padding: 4px;
+    font-family: verdana, arial, helvetica, sans-serif;
+    font-size: 10pt;
+    border: 1px solid #cccccc;
+}
+
+#search-results-count {
+    font-size: 9pt;
+    color: #666666;
+}
+
 .bookmark-item {
     /* border-bottom: 1px solid #cccccc; */
     padding: 8px;

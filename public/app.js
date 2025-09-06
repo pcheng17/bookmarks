@@ -1,6 +1,8 @@
 class BookmarkApp {
     constructor() {
         this.bookmarks = [];
+        this.filteredBookmarks = [];
+        this.searchTimeout = null;
         this.init();
     }
 
@@ -43,6 +45,12 @@ class BookmarkApp {
             e.preventDefault();
             this.updateBookmark();
         });
+
+        // Search functionality
+        const searchInput = document.getElementById('search-input');
+        searchInput.addEventListener('input', (e) => {
+            this.handleSearch(e.target.value);
+        });
     }
 
     async saveBookmark(url) {
@@ -81,7 +89,9 @@ class BookmarkApp {
             const response = await fetch('/api/bookmarks');
             if (response.ok) {
                 this.bookmarks = await response.json();
+                this.filteredBookmarks = [...this.bookmarks];
                 this.renderBookmarks();
+                this.updateSearchCount();
             }
         } catch (error) {
             console.error('Error loading bookmarks:', error);
@@ -92,7 +102,7 @@ class BookmarkApp {
         const container = document.getElementById('bookmarks-list');
         container.innerHTML = '';
 
-        this.bookmarks.forEach(bookmark => {
+        this.filteredBookmarks.forEach(bookmark => {
             const date = new Date(bookmark.created_at).toLocaleDateString('en-CA', {
                 timeZone: 'America/Los_Angeles'
             });
@@ -192,6 +202,55 @@ class BookmarkApp {
             }
         } catch (error) {
             console.error('Error deleting bookmark:', error);
+        }
+    }
+
+    handleSearch(query) {
+        // Clear existing timeout
+        if (this.searchTimeout) {
+            clearTimeout(this.searchTimeout);
+        }
+
+        // Set new timeout for 200ms debounce
+        this.searchTimeout = setTimeout(() => {
+            this.filterBookmarks(query);
+        }, 200);
+    }
+
+    filterBookmarks(query) {
+        const searchTerm = query.toLowerCase().trim();
+
+        if (!searchTerm) {
+            // Show all bookmarks if search is empty
+            this.filteredBookmarks = [...this.bookmarks];
+        } else {
+            // Filter bookmarks by title, description, tags, and URL
+            this.filteredBookmarks = this.bookmarks.filter(bookmark => {
+                const title = (bookmark.title || '').toLowerCase();
+                const description = (bookmark.description || '').toLowerCase();
+                const tags = (bookmark.tags || '').toLowerCase();
+                const url = bookmark.url.toLowerCase();
+
+                return title.includes(searchTerm) ||
+                       description.includes(searchTerm) ||
+                       tags.includes(searchTerm) ||
+                       url.includes(searchTerm);
+            });
+        }
+
+        this.renderBookmarks();
+        this.updateSearchCount();
+    }
+
+    updateSearchCount() {
+        const countElement = document.getElementById('search-results-count');
+        const total = this.bookmarks.length;
+        const filtered = this.filteredBookmarks.length;
+
+        if (total === filtered) {
+            countElement.textContent = `${total} bookmarks`;
+        } else {
+            countElement.textContent = `${filtered} of ${total} bookmarks`;
         }
     }
 }

@@ -1,12 +1,15 @@
 class BookmarkApp {
     constructor() {
         this.bookmarks = this.loadFromLocalStorage();
+        this.filteredBookmarks = [...this.bookmarks];
+        this.searchTimeout = null;
         this.init();
     }
 
     init() {
         this.bindEvents();
         this.renderBookmarks();
+        this.updateSearchCount();
     }
 
     bindEvents() {
@@ -43,6 +46,12 @@ class BookmarkApp {
             e.preventDefault();
             this.updateBookmark();
         });
+
+        // Search functionality
+        const searchInput = document.getElementById('search-input');
+        searchInput.addEventListener('input', (e) => {
+            this.handleSearch(e.target.value);
+        });
     }
 
     async saveBookmark(url) {
@@ -67,19 +76,25 @@ class BookmarkApp {
         };
 
         this.bookmarks.unshift(bookmark);
+        this.filteredBookmarks = [...this.bookmarks]; // Reset filter when adding
         this.saveToLocalStorage();
         this.renderBookmarks();
+        this.updateSearchCount();
 
         try {
             const title = await this.fetchPageTitle(url);
             bookmark.title = title;
+            this.filteredBookmarks = [...this.bookmarks]; // Reset filter when updating
             this.saveToLocalStorage();
             this.renderBookmarks();
+            this.updateSearchCount();
         } catch (error) {
             console.error('Failed to fetch title:', error);
             bookmark.title = this.getDomainFromUrl(url);
+            this.filteredBookmarks = [...this.bookmarks]; // Reset filter when updating
             this.saveToLocalStorage();
             this.renderBookmarks();
+            this.updateSearchCount();
         }
 
         console.log('Bookmark saved:', bookmark);
@@ -113,13 +128,16 @@ class BookmarkApp {
         const container = document.getElementById('bookmarks-list');
         container.innerHTML = '';
 
-        if (this.bookmarks.length === 0) {
-            container.innerHTML = '<div style="color: #666; font-size: 9pt; padding: 20px 0;">no bookmarks yet. paste a link above to get started.</div>';
+        if (this.filteredBookmarks.length === 0) {
+            if (this.bookmarks.length === 0) {
+                container.innerHTML = '<div style="color: #666; font-size: 9pt; padding: 20px 0;">no bookmarks yet. paste a link above to get started.</div>';
+            } else {
+                container.innerHTML = '<div style="color: #666; font-size: 9pt; padding: 20px 0;">no bookmarks match your search.</div>';
+            }
             return;
         }
 
-
-        this.bookmarks.forEach(bookmark => {
+        this.filteredBookmarks.forEach(bookmark => {
             const date = new Date(bookmark.created_at).toLocaleDateString('en-CA', {
                 timeZone: 'America/Los_Angeles'
             });
@@ -194,9 +212,11 @@ class BookmarkApp {
             bookmark.tags = tags;
             bookmark.updated_at = new Date().toISOString();
 
+            this.filteredBookmarks = [...this.bookmarks]; // Reset filter when updating
             this.saveToLocalStorage();
             document.getElementById('edit-modal').style.display = 'none';
             this.renderBookmarks();
+            this.updateSearchCount();
         }
     }
 
@@ -204,14 +224,65 @@ class BookmarkApp {
         if (!confirm('Delete this bookmark?')) return;
 
         this.bookmarks = this.bookmarks.filter(b => b.id !== id);
+        this.filteredBookmarks = [...this.bookmarks]; // Reset filter when deleting
         this.saveToLocalStorage();
         this.renderBookmarks();
+        this.updateSearchCount();
     }
 
     viewSnapshot(id) {
         const bookmark = this.bookmarks.find(b => b.id === id);
         if (bookmark) {
             alert(`In production, this would show a snapshot of:\n${bookmark.url}\n\n(Snapshots are only available when deployed to Cloudflare)`);
+        }
+    }
+
+    handleSearch(query) {
+        // Clear existing timeout
+        if (this.searchTimeout) {
+            clearTimeout(this.searchTimeout);
+        }
+
+        // Set new timeout for 200ms debounce
+        this.searchTimeout = setTimeout(() => {
+            this.filterBookmarks(query);
+        }, 200);
+    }
+
+    filterBookmarks(query) {
+        const searchTerm = query.toLowerCase().trim();
+
+        if (!searchTerm) {
+            // Show all bookmarks if search is empty
+            this.filteredBookmarks = [...this.bookmarks];
+        } else {
+            // Filter bookmarks by title, description, tags, and URL
+            this.filteredBookmarks = this.bookmarks.filter(bookmark => {
+                const title = (bookmark.title || '').toLowerCase();
+                const description = (bookmark.description || '').toLowerCase();
+                const tags = (bookmark.tags || '').toLowerCase();
+                const url = bookmark.url.toLowerCase();
+
+                return title.includes(searchTerm) ||
+                       description.includes(searchTerm) ||
+                       tags.includes(searchTerm) ||
+                       url.includes(searchTerm);
+            });
+        }
+
+        this.renderBookmarks();
+        this.updateSearchCount();
+    }
+
+    updateSearchCount() {
+        const countElement = document.getElementById('search-results-count');
+        const total = this.bookmarks.length;
+        const filtered = this.filteredBookmarks.length;
+
+        if (total === filtered) {
+            countElement.textContent = `${total} bookmarks`;
+        } else {
+            countElement.textContent = `${filtered} of ${total} bookmarks`;
         }
     }
 }

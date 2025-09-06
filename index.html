@@ -8,12 +8,19 @@
 </head>
 <body>
     <div class="container">
-        <h1>bookmarks</h1>
-        
-        <form id="bookmark-form">
-            <input type="url" id="url-input" placeholder="paste link here" required>
-            <button type="submit" style="display: none;"></button>
-        </form>
+        <div style="display: flex; align-items: center; gap: 24px;">
+            <h1>bookmarks <span style="font-size: 8pt; color: #666;">(local development)</span></h1>
+            <form id="bookmark-form">
+                <input type="url" id="url-input" placeholder="paste link here" required>
+                <button type="submit" style="display: none;"></button>
+            </form>
+        </div>
+
+
+        <div id="search-container">
+            <input type="text" id="search-input" placeholder="search bookmarks...">
+            <div id="search-results-count"></div>
+        </div>
 
         <div id="bookmarks-list"></div>
     </div>
@@ -33,6 +40,6 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app-local.js"></script>
 </body>
 </html>
