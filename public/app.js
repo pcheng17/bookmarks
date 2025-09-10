@@ -11,6 +11,35 @@ class BookmarkApp {
         this.loadBookmarks();
     }
 
+    showNotification(message, type = 'success') {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.className = `notification ${type}`;
+        notification.style.display = 'block';
+
+        // Auto-hide after 4 seconds
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 4000);
+    }
+
+    isValidWebpageUrl(url) {
+        try {
+            const urlObj = new URL(url);
+            // Check if it's http or https protocol
+            if (!['http:', 'https:'].includes(urlObj.protocol)) {
+                return false;
+            }
+            // Check if hostname exists and is not empty
+            if (!urlObj.hostname || urlObj.hostname.trim() === '') {
+                return false;
+            }
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
     bindEvents() {
         const form = document.getElementById('bookmark-form');
         const urlInput = document.getElementById('url-input');
@@ -56,10 +85,16 @@ class BookmarkApp {
     async saveBookmark(url) {
         if (!url) return;
 
-        // Check if URL already exists
+        // Validate URL format
+        if (!this.isValidWebpageUrl(url)) {
+            this.showNotification('Please enter a valid webpage URL (http:// or https://)', 'error');
+            return;
+        }
+
+        // Check if URL already exists locally
         const existingBookmark = this.bookmarks.find(b => b.url === url);
         if (existingBookmark) {
-            console.log('URL already bookmarked:', url);
+            this.showNotification('This bookmark already exists', 'warning');
             return;
         }
 
@@ -73,13 +108,16 @@ class BookmarkApp {
             });
 
             if (response.ok) {
+                this.showNotification('Bookmark saved successfully!', 'success');
                 this.loadBookmarks();
             } else if (response.status === 409) {
-                console.log('URL already bookmarked');
+                this.showNotification('This bookmark already exists', 'warning');
             } else {
-                console.error('Failed to save bookmark');
+                const errorText = await response.text();
+                this.showNotification(`Failed to save bookmark: ${response.status}`, 'error');
             }
         } catch (error) {
+            this.showNotification('Network error: Unable to save bookmark', 'error');
             console.error('Error saving bookmark:', error);
         }
     }
