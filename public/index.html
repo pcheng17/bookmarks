@@ -52,25 +52,6 @@
                 document.getElementById("search-input").focus();
             }
         });
-
-        document.addEventListener("paste", (e) => {
-            // ignore if already pasting in an input/textarea
-            if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
-
-            // prevent default paste behavior to avoid double pasting
-            e.preventDefault();
-
-            // get the pasted content
-            const pastedText = e.clipboardData.getData("text");
-
-            // focus the URL input and set its value
-            const urlInput = document.getElementById("url-input");
-            urlInput.focus();
-            urlInput.value = pastedText;
-
-            // trigger input event in case there are listeners
-            urlInput.dispatchEvent(new Event('input', { bubbles: true }));
-        });
     </script>
 </body>
 </html>
