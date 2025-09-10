@@ -1,3 +1,4 @@
+-- Migration number: 0001 	 2025-09-10T06:40:49.373Z
 CREATE TABLE bookmarks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     url TEXT NOT NULL,

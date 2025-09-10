@@ -1,0 +1,2 @@
+-- Migration number: 0002 	 2025-09-10T06:41:57.827Z
+ALTER TABLE bookmarks ADD COLUMN archived BOOLEAN DEFAULT 0;

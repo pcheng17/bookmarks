@@ -27,7 +27,7 @@ async function handleBookmarksAPI(request, env) {
     if (request.method === 'GET') {
         try {
             const result = await env.DB.prepare(
-                'SELECT * FROM bookmarks ORDER BY created_at DESC'
+                'SELECT * FROM bookmarks WHERE archived = 0 ORDER BY created_at DESC'
             ).all();
 
             return new Response(JSON.stringify(result.results), {
@@ -82,11 +82,11 @@ async function handleBookmarksAPI(request, env) {
 async function handleBookmarkAPI(request, env, id) {
     if (request.method === 'PUT') {
         try {
-            const { description, tags } = await request.json();
+            const { description, tags, archived } = await request.json();
 
             const result = await env.DB.prepare(
-                'UPDATE bookmarks SET description = ?, tags = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING *'
-            ).bind(description, tags, id).first();
+                'UPDATE bookmarks SET description = ?, tags = ?, archived = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING *'
+            ).bind(description, tags, archived || 0, id).first();
 
             if (!result) {
                 return new Response('Not found', { status: 404 });

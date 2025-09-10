@@ -160,6 +160,7 @@ class BookmarkApp {
                 <div class="actions-menu" id="menu-${bookmark.id}">
                     <a onclick="app.editBookmark(${bookmark.id})">edit</a>
                     <a href="/snapshot/${bookmark.id}" target="_blank">view snapshot</a>
+                    <a onclick="app.archiveBookmark(${bookmark.id})">archive</a>
                     <a onclick="app.deleteBookmark(${bookmark.id})">delete</a>
                 </div>
             `;
@@ -226,6 +227,33 @@ class BookmarkApp {
             }
         } catch (error) {
             console.error('Error updating bookmark:', error);
+        }
+    }
+
+    async archiveBookmark(id) {
+        const bookmark = this.bookmarks.find(b => b.id === id);
+        if (!bookmark) return;
+
+        try {
+            const response = await fetch(`/api/bookmarks/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    description: bookmark.description,
+                    tags: bookmark.tags,
+                    archived: 1 
+                })
+            });
+
+            if (response.ok) {
+                this.showNotification('Bookmark archived', 'success');
+                this.loadBookmarks();
+            }
+        } catch (error) {
+            console.error('Error archiving bookmark:', error);
+            this.showNotification('Error archiving bookmark', 'error');
         }
     }
 
