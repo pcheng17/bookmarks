@@ -2,7 +2,7 @@
   "name": "bookmarks",
   "version": "1.0.0",
   "description": "Minimal bookmark app for Cloudflare",
-  "main": "worker.js",
+  "main": "worker.ts",
   "scripts": {
     "start": "node server.js",
     "dev": "wrangler dev",
@@ -14,9 +14,15 @@
     "db:migrate": "wrangler d1 migrations apply --remote DB --env=''",
     "db:migrate:staging": "wrangler d1 migrations apply --remote DB --env staging",
     "r2:create": "wrangler r2 bucket create bookmarks-snapshots",
-    "r2:create:staging": "wrangler r2 bucket create bookmarks-snapshots-staging"
+    "r2:create:staging": "wrangler r2 bucket create bookmarks-snapshots-staging",
+    "db:generate": "drizzle-kit generate"
   },
   "devDependencies": {
+    "drizzle-kit": "^0.31.4",
     "wrangler": "^4.34.0"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20250910.0",
+    "drizzle-orm": "^0.44.5"
   }
 }

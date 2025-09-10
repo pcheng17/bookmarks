@@ -1,3 +1,7 @@
+import { drizzle } from 'drizzle-orm/d1';
+import { bookmarks } from './src/schema';
+import { eq, desc } from 'drizzle-orm';
+
 export default {
     async fetch(request, env, ctx) {
         const url = new URL(request.url);
@@ -17,20 +21,22 @@ export default {
             return await handleSnapshot(request, env, id);
         }
 
-        // Let Cloudflare handle static assets (HTML, CSS, JS)
-        // This will automatically serve files from the public/ directory
         return env.ASSETS.fetch(request);
     }
 };
 
 async function handleBookmarksAPI(request, env) {
+    const db = drizzle(env.DB);
+
     if (request.method === 'GET') {
         try {
-            const result = await env.DB.prepare(
-                'SELECT * FROM bookmarks WHERE archived = 0 ORDER BY created_at DESC'
-            ).all();
+            const result = await db
+                .select()
+                .from(bookmarks)
+                .where(eq(bookmarks.archived, false))
+                .orderBy(desc(bookmarks.createdAt));
 
-            return new Response(JSON.stringify(result.results), {
+            return new Response(JSON.stringify(result), {
                 headers: { 'Content-Type': 'application/json' }
             });
         } catch (error) {
@@ -46,11 +52,13 @@ async function handleBookmarksAPI(request, env) {
             const { url } = await request.json();
 
             // Check if URL already exists
-            const existingBookmark = await env.DB.prepare(
-                'SELECT id FROM bookmarks WHERE url = ?'
-            ).bind(url).first();
+            const existingBookmark = await db
+                .select({ id: bookmarks.id })
+                .from(bookmarks)
+                .where(eq(bookmarks.url, url))
+                .limit(1);
 
-            if (existingBookmark) {
+            if (existingBookmark.length > 0) {
                 return new Response(JSON.stringify({ error: 'URL already bookmarked' }), {
                     status: 409,
                     headers: { 'Content-Type': 'application/json' }
@@ -60,11 +68,16 @@ async function handleBookmarksAPI(request, env) {
             const title = await getPageTitle(url);
             const snapshotKey = await savePageSnapshot(url, env);
 
-            const result = await env.DB.prepare(
-                'INSERT INTO bookmarks (url, title, snapshot_key) VALUES (?, ?, ?) RETURNING *'
-            ).bind(url, title, snapshotKey).first();
+            const result = await db
+                .insert(bookmarks)
+                .values({
+                    url,
+                    title,
+                    snapshotKey
+                })
+                .returning();
 
-            return new Response(JSON.stringify(result), {
+            return new Response(JSON.stringify(result[0]), {
                 status: 201,
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -80,19 +93,28 @@ async function handleBookmarksAPI(request, env) {
 }
 
 async function handleBookmarkAPI(request, env, id) {
+    const db = drizzle(env.DB);
+
     if (request.method === 'PUT') {
         try {
             const { description, tags, archived } = await request.json();
 
-            const result = await env.DB.prepare(
-                'UPDATE bookmarks SET description = ?, tags = ?, archived = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING *'
-            ).bind(description, tags, archived || 0, id).first();
+            const result = await db
+                .update(bookmarks)
+                .set({
+                    description,
+                    tags,
+                    archived: archived || false,
+                    updatedAt: sql`CURRENT_TIMESTAMP`
+                })
+                .where(eq(bookmarks.id, parseInt(id)))
+                .returning();
 
-            if (!result) {
+            if (result.length === 0) {
                 return new Response('Not found', { status: 404 });
             }
 
-            return new Response(JSON.stringify(result), {
+            return new Response(JSON.stringify(result[0]), {
                 headers: { 'Content-Type': 'application/json' }
             });
         } catch (error) {
@@ -105,18 +127,20 @@ async function handleBookmarkAPI(request, env, id) {
 
     if (request.method === 'DELETE') {
         try {
-            const bookmark = await env.DB.prepare(
-                'SELECT snapshot_key FROM bookmarks WHERE id = ?'
-            ).bind(id).first();
+            const bookmark = await db
+                .select({ snapshotKey: bookmarks.snapshotKey })
+                .from(bookmarks)
+                .where(eq(bookmarks.id, parseInt(id)))
+                .limit(1);
 
-            if (bookmark) {
+            if (bookmark.length > 0 && bookmark[0].snapshotKey) {
                 // Clean up R2 objects
-                if (bookmark.snapshot_key) {
-                    await env.R2.delete(bookmark.snapshot_key);
-                }
+                await env.R2.delete(bookmark[0].snapshotKey);
             }
 
-            await env.DB.prepare('DELETE FROM bookmarks WHERE id = ?').bind(id).run();
+            await db
+                .delete(bookmarks)
+                .where(eq(bookmarks.id, parseInt(id)));
 
             return new Response('', { status: 204 });
         } catch (error) {
@@ -131,16 +155,20 @@ async function handleBookmarkAPI(request, env, id) {
 }
 
 async function handleSnapshot(request, env, id) {
-    try {
-        const bookmark = await env.DB.prepare(
-            'SELECT snapshot_key FROM bookmarks WHERE id = ?'
-        ).bind(id).first();
+    const db = drizzle(env.DB);
 
-        if (!bookmark || !bookmark.snapshot_key) {
+    try {
+        const bookmark = await db
+            .select({ snapshotKey: bookmarks.snapshotKey })
+            .from(bookmarks)
+            .where(eq(bookmarks.id, parseInt(id)))
+            .limit(1);
+
+        if (bookmark.length === 0 || !bookmark[0].snapshotKey) {
             return new Response('Snapshot not found', { status: 404 });
         }
 
-        const snapshot = await env.R2.get(bookmark.snapshot_key);
+        const snapshot = await env.R2.get(bookmark[0].snapshotKey);
 
         if (!snapshot) {
             return new Response('Snapshot not found', { status: 404 });
@@ -154,6 +182,7 @@ async function handleSnapshot(request, env, id) {
     }
 }
 
+// Keep these utility functions the same
 async function getPageTitle(url) {
     try {
         const response = await fetch(url, {
